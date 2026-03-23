@@ -39,3 +39,24 @@ services:
       timeout: 30s
       retries: 32
     container_name: "airflow-${AIRFLOW_ENV_TYPE}-${AIRFLOW_ENV_NAME}"
+  scheduler:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    hostname: scheduler
+    restart: on-failure
+    depends_on:
+      webserver:
+        condition: service_healthy
+    command: airflow scheduler
+    env_file:
+      - .env
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./scripts:/opt/airflow/scripts
+      - ./logs:/opt/airflow/logs
+      - ./plugins:/opt/airflow/plugins
+      - ./requirements.txt:/opt/airflow/requirements.txt
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    container_name: "airflow-scheduler-${AIRFLOW_ENV_TYPE}-${AIRFLOW_ENV_NAME}"
